@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
-const ItemtId = require('mongoose').Types.ItemtId; 
+const postId = require('mongoose').Types.postId;
 
 //Find all items
 router.get('/', async (req, res) => {
@@ -41,33 +41,76 @@ router.post('/', async (req, res) => {
 router.get('/:postId', async (req, res) => {
 
     Post.findById(req.params.postId, (err, data) => {
-        if(!err) {
-            res.status(200).json({code: 200, message: 'Items matches to ID', showitem: data})
-        } else {
-          res.status(400).send("Invalid ID");
+        if (err) {
+          res.status(400)
+          res.json({
+            success: false,
+            message: 'Invalid ID'
+          })
+          res.end()
+          return
         }
-    });
+    
+        if (!data) {
+          res.status(404)
+          res.json({
+            success: false,
+            message: `Cannot find items with the itemId: ${postId}`
+          })
+          res.end()
+          return
+        }
+        res.status(200)
+        res.json({
+          success: true,
+          message: `Item found`,
+          data: data
+        })
+        res.end()
+        return
+      })
 });
 
 // Remove a items by ID
 
 router.delete('/:postId', async (req, res) => {
-    
-  
 
-    Post.delete(req.params.postId, (err, data) => {
-        if(!err) {
-            res.status(200).json({code: 200, message: 'Deleted items matches to ID', showitem: data})
-        } else {
-          res.status(400).send("Invalid ID");
+    Post.findByIdAndDelete(req.params.postId, (err, data) => {
+        if (err) {
+          res.status(400)
+          res.json({
+            success: false,
+            message: 'Invalid ID'
+          })
+          res.end()
+          return
         }
-    });
+    
+        if (!data) {
+          res.status(404)
+          res.json({
+            success: false,
+            message: `Cannot find items with the itemId: ${postId}`
+          })
+          res.end()
+          return
+        }
+        res.status(200)
+        res.json({
+          success: true,
+          message: 'Deleted items matches to ID', 
+          showitem: data
+        })
+        res.end()
+        return
+    
+      })
    
 });
 
 // Update a items by ID
 
-router.put('/:postId', (req, res) => {
+router.put('/:postId', async (req, res) => {
 
 
     const item = {
@@ -76,14 +119,37 @@ router.put('/:postId', (req, res) => {
         price: req.body.price,
         quantity: req.body.quantity
     };
-    Post.findByIdAndUpdate(req.params.postId, { $set: item }, { new: true }, (err, data) => {
-        if(!err) {
-            res.status(200).json({code: 200, message: 'Item Updated Successfully', updateItem: data})
-        } else {
-            res.status(400).send("Invalid ID");
-        }
-    });
-});
 
+    Post.findByIdAndUpdate(req.params.postId, { $set: item }, { new: true }, (err, data) =>  {
+        if (err) {
+          res.status(400)
+          res.json({
+            success: false,
+            message: 'Invalid ID'
+          })
+          res.end()
+          return
+        }
+    
+        if (!data) {
+          res.status(404)
+          res.json({
+            success: false,
+            message: `Cannot find items with the itemId: ${postId}`
+          })
+          res.end()
+          return
+        }
+        res.status(200)
+        res.json({
+          success: true,
+          message: `Item Updated Successfully`,
+          updateItem: data
+        })
+        res.end()
+        return
+      })
+    
+});
 
 module.exports = router;
